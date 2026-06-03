@@ -1989,13 +1989,37 @@
        ═══════════════════════════════════════════════ */
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
-    document.getElementById('navToggle').addEventListener('click', () => document.getElementById('navlinks').classList.toggle('open'));
+    const navToggle = document.getElementById('navToggle');
+    const navlinks = document.getElementById('navlinks');
+
+    navToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!navlinks.classList.contains('open')) {
+        navlinks.classList.add('open');
+        history.pushState({ sidebar: 'open' }, null, window.location.hash || window.location.pathname);
+      } else {
+        navlinks.classList.remove('open');
+        if (history.state && history.state.sidebar === 'open') {
+          history.back();
+        }
+      }
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', (e) => {
+      if (navlinks.classList.contains('open') && !navlinks.contains(e.target) && !navToggle.contains(e.target)) {
+        navlinks.classList.remove('open');
+        if (history.state && history.state.sidebar === 'open') {
+          history.back();
+        }
+      }
+    });
     
     // Smooth scrolling and history management for nav links
     document.querySelectorAll('#navlinks a').forEach(a => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        document.getElementById('navlinks').classList.remove('open');
+        navlinks.classList.remove('open');
         const hash = a.getAttribute('href');
         
         if (window.location.hash && window.location.hash !== '#') {
@@ -2011,6 +2035,13 @@
 
     // Handle back button to move to home page properly
     window.addEventListener('popstate', () => {
+      if (navlinks.classList.contains('open')) {
+        navlinks.classList.remove('open');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        history.replaceState(null, null, window.location.pathname);
+        return;
+      }
+
       if (!window.location.hash || window.location.hash === '#') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
