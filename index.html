@@ -199,27 +199,35 @@
       box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
     }
 
-    .logo {
+    .logo-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      text-decoration: none;
+      transition: all 0.3s var(--ease);
+      box-shadow: 0 0 15px rgba(139, 92, 246, 0.05);
+    }
+
+    .logo-box:hover {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: var(--accent-1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2);
+    }
+
+    .logo-text {
       font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      font-size: 22px;
+      font-size: 20px;
       background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
-      position: relative;
-    }
-
-    .logo::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
-      border-radius: 1px;
-      box-shadow: 0 0 10px var(--accent-glow);
     }
 
     nav ul {
@@ -1455,7 +1463,9 @@
 
   <!-- ═══════════ NAVBAR ═══════════ -->
   <nav id="nav">
-    <div class="logo">MB</div>
+    <a href="#" id="logoBtn" class="logo-box" aria-label="Home">
+      <span class="logo-text">MB</span>
+    </a>
     <ul id="navlinks">
       <li><a href="#about">About</a></li>
       <li><a href="#projects">Projects</a></li>
@@ -1979,7 +1989,43 @@
     const nav = document.getElementById('nav');
     window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
     document.getElementById('navToggle').addEventListener('click', () => document.getElementById('navlinks').classList.toggle('open'));
-    document.querySelectorAll('#navlinks a').forEach(a => a.addEventListener('click', () => document.getElementById('navlinks').classList.remove('open')));
+    
+    // Smooth scrolling and history management for nav links
+    document.querySelectorAll('#navlinks a').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById('navlinks').classList.remove('open');
+        const hash = a.getAttribute('href');
+        
+        if (window.location.hash && window.location.hash !== '#') {
+          history.replaceState(null, null, hash);
+        } else {
+          history.pushState(null, null, hash);
+        }
+        
+        const target = document.querySelector(hash);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // Handle back button to move to home page properly
+    window.addEventListener('popstate', () => {
+      if (!window.location.hash || window.location.hash === '#') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const target = document.querySelector(window.location.hash);
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+
+    // Logo click to homepage
+    document.getElementById('logoBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.location.hash) {
+        history.pushState(null, null, window.location.pathname);
+      }
+    });
 
     // Active nav link on scroll
     const sections = document.querySelectorAll('section[id]');
